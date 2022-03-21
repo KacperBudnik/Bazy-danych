@@ -66,10 +66,3 @@ SELECT store_id, COUNT(store_id) from inventory
 WHERE film_id = 369
 GROUP BY store_id;
 
--- ZAD 11
-SELECT inventory_id from inventory
-WHERE film_id = 369;
--- Zatem inventory_id \in  1690:1697
-
-SELECT DISTINCT customer_id FROM rental
-WHERE inventory_id<=1697 AND inventory_id>=1690;
