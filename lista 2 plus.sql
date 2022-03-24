@@ -155,6 +155,9 @@ ORDER BY zarobil DESC;
 SELECT Count(email) from customer
 WHERE email LIKE "%@sakilacustomer.org";
 -- Jest łacznie 599 danych w tabeli customer i każdy email jest z sakili
+SELECT Count(email) as "poza domena" from customer
+WHERE email NOT LIKE "%@sakilacustomer.org";
+
 
 -- ZAD 18
 SELECT store_id, COUNT(store_id) FROM customer
@@ -167,9 +170,9 @@ WHERE return_date IS NULL -- Brak danych jest zapisywany jako NULL (brak spacji,
 GROUP BY staff_id;
 
 -- Zad 20
-SELECT customer_id, rental_date FROM rental -- Bo osoba o nr 1 pracuje tylko w placowce 1 i analogicznie dla 2 
+SELECT customer_id, rental_date FROM rental
 WHERE return_date IS NULL -- Brak danych jest zapisywany jako NULL (brak spacji, pustych miejsc)
-ORDER BY rental_date
+ORDER BY rental_date -- najwcześniej wypożyczony
 LIMIT 1;
 -- Jest to 554, zatem
 Select email, customer_id, address_id from customer
