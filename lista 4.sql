@@ -36,12 +36,10 @@ GROUP BY city_id HAVING count(distinct district)>1
 ORDER BY city_id;
 
 -- ZAD 5
-
-
-
-
-
-
+SELECT amount AS `kwota`, staff_id AS `pracownik`, SUM(amount) AS `Laczny zarobek` From payment
+WHERE amount>0
+GROUP BY amount, staff_id
+ORDER BY SUM(amount) DESC;
 
 
 -- ZAD 6
@@ -50,7 +48,8 @@ SELECT rental_id,
         FLOOR((return_date-rental_date)/60/60/24), " dni oraz ", 
         FLOOR((return_date-rental_date)/60/60)%24, "h ", 
         FLOOR((return_date-rental_date)/60)%24%60, "m ", 
-        FLOOR((return_date-rental_date))%24%60%60, "s ") 
+        FLOOR((return_date-rental_date))%24%60%60, "s ")
+        AS `Czas wypożycznia`
 FROM rental
 WHERE return_date IS NOT NULL
 ORDER BY return_date-rental_date
@@ -62,10 +61,20 @@ SELECT rental_id,
         FLOOR((return_date-rental_date)/60/60)%24, "h ", 
         FLOOR((return_date-rental_date)/60)%24%60, "m ", 
         FLOOR((return_date-rental_date))%24%60%60, "s ") 
+        AS `Czas wypożycznia`
 FROM rental
 WHERE return_date IS NOT NULL
 ORDER BY return_date-rental_date DESC
 LIMIT 1;
 
+-- Zad 7
+Select customer_id AS `Najdłużej przetrzymywane (średnio)` FROM rental
+GROUP BY customer_id
+ORDER BY AVG(return_date-rental_date) DESC
+LIMIT 1;
 
+Select customer_id AS `Najdłużej wypożyczone` FROM rental
+GROUP BY customer_id
+ORDER BY SUM(return_date-rental_date) DESC
+LIMIT 1;
 
