@@ -17,7 +17,7 @@ GROUP BY CustomerID Having Count(CustomerID)>19;
 Select Count(*) AS `czlowiekow`
  From (
     SELECT Customerid as id From Orders
-    GROUP BY CustomerID Having Count(CustomerID)>19) as xyz;
+    GROUP BY CustomerID Having Count(CustomerID)>20) as xyz;
 
 
 -- ZAD 3
