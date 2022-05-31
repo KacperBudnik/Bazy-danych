@@ -6,7 +6,7 @@ using Dates
 using Random
 
 cd("D:\\GitHub\\Bazy-danych\\Projekty")
- ############################### Dane ###############################
+############################### Dane ###############################
     # Tworzenie wektorów
     begin
         players=[
@@ -75,7 +75,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         rental=[
             Int[], # id
             Date[], # rental_date
-            Date[], # return_date
+            Any[], # return_date/NULL
             Int[], # customer_id
             Int[], # days
             Int[], # equipment_id
@@ -1026,7 +1026,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             enemy=randperm(length(teams[1][teams[3].==section[1]][2:end]))
             enemy=teams[1][teams[3].==section[1]][2:end][enemy][1:n]
 
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
@@ -1078,7 +1083,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[2]][2:end]))
             enemy=teams[1][teams[3].==section[2]][2:end][enemy][1:n]
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
@@ -1129,9 +1139,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
         
                 enemy=rand(teams[1][teams[3].==section[1]][2:end])
-        
-                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
-        
+                ally = []
+                try
+                    ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
+                catch
+                    error("Brak sprzymierzencow")
+                end
                 w=rand()<0.65
                 push!(games[1],games[1][end]+1)
                 if w
@@ -1168,8 +1181,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
         
                 enemy=rand(teams[1][teams[3].==section[2]][2:end])
-                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
-        
+                ally = []
+                try
+                    ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
+                catch
+                    error("Brak sprzymierzencow")
+                end
                 w=rand()<0.65
                 push!(games[1],games[1][end]+1)
                 if w
@@ -1269,8 +1286,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[1]][2:end]))
             enemy=teams[1][teams[3].==section[1]][2:end][enemy][1:n]
-
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
@@ -1320,7 +1341,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[2]][2:end]))
             enemy=teams[1][teams[3].==section[2]][2:end][enemy][1:n]
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
@@ -1368,9 +1394,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
 
             enemy=rand(teams[1][teams[3].==section[1]][2:end])
-
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
-
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
+            catch
+                error("Brak sprzymierzencow")
+            end
             w=rand()<0.65
             push!(games[1],games[1][end]+1)
             if w
@@ -1407,8 +1436,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
 
             enemy=rand(teams[1][teams[3].==section[2]][2:end])
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
-
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
+            catch
+                error("Brak sprzymierzencow")
+            end
             w=rand()<0.65
             push!(games[1],games[1][end]+1)
             if w
@@ -1534,7 +1567,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             returns=[Any[] for i in 1:length(equipment[1])]
 
-            for i in Date(start_year+1,6,24):Day(1):Date(2022,5,25)
+            for i in Date(start_year+1,6,24):Day(1):Date(now())
                 m=rand(9 <=Dates.month(i) <= 2 ? Poisson(5) : Poisson(3))
                 cust=sample(1:n,m,replace=false)
                 for j in cust
@@ -1553,10 +1586,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1575,10 +1609,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1597,10 +1632,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1619,10 +1655,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1641,10 +1678,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1652,7 +1690,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 end
 
                 for k in 1:length(returns)
-                    while length(returns[k])>0 &&  returns[k][1][1]<=i
+                    while length(returns[k])>0 && returns[k][1][1] != "NULL" && returns[k][1][1]<=i
                         stan[k]+=returns[k][1][2]
                         popfirst!(returns[k])
                     end
@@ -1740,7 +1778,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         end
         
         for i in 1:length(rental[1])
-            txt="($(rental[1][i]),'$(rental[2][i])','$(rental[3][i])',$(rental[4][i]),$(rental[5][i]),$(rental[6][i]),$(rental[7][i]))"
+            txt="($(rental[1][i]),'$(rental[2][i])',$(rental[3][i] != "NULL" ? "'$(rental[3][i])'" : rental[3][i]),$(rental[4][i]),$(rental[5][i]),$(rental[6][i]),$(rental[7][i]))"
             txt*= i<length(rental[1]) ? ",\n" : "\n;"
             rental_table*=txt
         end

@@ -6,7 +6,7 @@ using Dates
 using Random
 
 cd("D:\\GitHub\\Bazy-danych\\Projekty")
- ############################### Dane ###############################
+############################### Dane ###############################
     # Tworzenie wektorów
     begin
         players=[
@@ -38,13 +38,6 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             String[] # city
         ]
 
-        meetings=[
-            Int[], # id
-            Int[], # our_team_id
-            Int[], # other_team_id
-            Int[], # address_id
-            Date[] # date
-        ]
 
         teams=[
             Int[], # id
@@ -54,10 +47,12 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
         games=[
             Int[], # id
-            Int[], # winning_team_id
-            Int[], # lost_team_id
-            Date[], # date
+            Int[], # our_team_id
+            Int[], # enemy_team_id
             String[], # rank
+            Any[], # results
+            Date[], # date
+            Int[] # address_id
         ]
 
         participation=[
@@ -75,7 +70,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         rental=[
             Int[], # id
             Date[], # rental_date
-            Date[], # return_date
+            Any[], # return_date/NULL
             Int[], # customer_id
             Int[], # days
             Int[], # equipment_id
@@ -1026,22 +1021,22 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             enemy=randperm(length(teams[1][teams[3].==section[1]][2:end]))
             enemy=teams[1][teams[3].==section[1]][2:end][enemy][1:n]
 
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
-                w=rand()<0.65
                 push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
-                if w
-                    push!(games[2],1)
-                    push!(games[3],enemy[j])
-                else
-                    push!(games[3],1)
-                    push!(games[2],enemy[j])
-                end
-                push!(games[4], i+Day(round(Int,((j-1)/2))))
-                push!(games[5],rank[1])
-
+                push!(games[2],1)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],rand()<0.65)
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit)
 
                 complete=ally[.!injury]
                 if length(complete)==5
@@ -1078,21 +1073,22 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[2]][2:end]))
             enemy=teams[1][teams[3].==section[2]][2:end][enemy][1:n]
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
-                w=rand()<0.65
-                push!(games[1],games[1][end]+1)
-                if w
-                    push!(games[2],2)
-                    push!(games[3],enemy[j])
-                else
-                    push!(games[3],2)
-                    push!(games[2],enemy[j])
-                end
-                push!(games[4], i+Day(round(Int,((j-1)/2))))
-                push!(games[5],rank[1])
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],2)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],rand()<0.55)
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit)
 
                 complete=ally[.!injury]
                 if length(complete)==5
@@ -1129,22 +1125,20 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
         
                 enemy=rand(teams[1][teams[3].==section[1]][2:end])
-        
-                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
-        
-                w=rand()<0.65
-                push!(games[1],games[1][end]+1)
-                if w
-                    push!(games[2],1)
-                    push!(games[3],enemy)
-                else
-                    push!(games[3],1)
-                    push!(games[2],enemy)
+                ally = []
+                try
+                    ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
+                catch
+                    error("Brak sprzymierzencow")
                 end
-                push!(games[4], i)
-                push!(games[5],rank[2])
-        
-        
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],1)
+                push!(games[3],enemy)
+                push!(games[4],rank[2])
+                push!(games[5],rand()<0.65)
+                push!(games[6], i)
+                push!(games[7],cit)
+
                 for i in ally
                     push!(participation[1], length(participation[1])>0 ? participation[1][end]+1 : 1)
                     push!(participation[2], i)
@@ -1168,19 +1162,19 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
         
                 enemy=rand(teams[1][teams[3].==section[2]][2:end])
-                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
-        
-                w=rand()<0.65
-                push!(games[1],games[1][end]+1)
-                if w
-                    push!(games[2],2)
-                    push!(games[3],enemy)
-                else
-                    push!(games[3],2)
-                    push!(games[2],enemy)
+                ally = []
+                try
+                    ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
+                catch
+                    error("Brak sprzymierzencow")
                 end
-                push!(games[4], i)
-                push!(games[5],rank[2])
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],2)
+                push!(games[3],enemy)
+                push!(games[4],rank[2])
+                push!(games[5],rand()<0.55)
+                push!(games[6], i)
+                push!(games[7],cit)
         
                 for i in ally
                     push!(participation[1], length(participation[1])>0 ? participation[1][end]+1 : 1)
@@ -1269,23 +1263,22 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[1]][2:end]))
             enemy=teams[1][teams[3].==section[1]][2:end][enemy][1:n]
-
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
-                w=rand()<0.65
-                push!(games[1],games[1][end]+1)
-                if w
-                    push!(games[2],1)
-                    push!(games[3],enemy[j])
-                else
-                    push!(games[3],1)
-                    push!(games[2],enemy[j])
-                end
-                push!(games[4], i+Day(round(Int,((j-1)/2))))
-                push!(games[5],rank[1])
-
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],1)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],rand()<0.65)
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit)
 
                 complete=ally[.!injury]
                 if length(complete)==5
@@ -1320,21 +1313,22 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             enemy=randperm(length(teams[1][teams[3].==section[2]][2:end]))
             enemy=teams[1][teams[3].==section[2]][2:end][enemy][1:n]
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:5]
+            catch
+                error("Brak sprzymierzencow")
+            end
             injury=Bool.(zeros(5))
 
             for j in 1:n
-                w=rand()<0.65
-                push!(games[1],games[1][end]+1)
-                if w
-                    push!(games[2],2)
-                    push!(games[3],enemy[j])
-                else
-                    push!(games[3],2)
-                    push!(games[2],enemy[j])
-                end
-                push!(games[4], i+Day(round(Int,((j-1)/2))))
-                push!(games[5],rank[1])
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],2)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],rand()<0.55)
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit)
 
                 complete=ally[.!injury]
                 if length(complete)==5
@@ -1368,20 +1362,19 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
 
             enemy=rand(teams[1][teams[3].==section[1]][2:end])
-
-            ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
-
-            w=rand()<0.65
-            push!(games[1],games[1][end]+1)
-            if w
-                push!(games[2],1)
-                push!(games[3],enemy)
-            else
-                push!(games[3],1)
-                push!(games[2],enemy)
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==1 .& players[5]]))[1:4]
+            catch
+                error("Brak sprzymierzencow")
             end
-            push!(games[4], i)
-            push!(games[5],rank[2])
+            push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+            push!(games[2],1)
+            push!(games[3],enemy)
+            push!(games[4],rank[2])
+            push!(games[5],rand()<0.65)
+            push!(games[6], i)
+            push!(games[7],cit)
 
 
             for i in ally
@@ -1407,19 +1400,19 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
 
             enemy=rand(teams[1][teams[3].==section[2]][2:end])
-            ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
-
-            w=rand()<0.65
-            push!(games[1],games[1][end]+1)
-            if w
-                push!(games[2],2)
-                push!(games[3],enemy)
-            else
-                push!(games[3],2)
-                push!(games[2],enemy)
+            ally = []
+            try
+                ally =randperm(length(players[1][players[3].==2 .&& players[5]]))[1:4]
+            catch
+                error("Brak sprzymierzencow")
             end
-            push!(games[4], i)
-            push!(games[5],rank[2])
+            push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+            push!(games[2],2)
+            push!(games[3],enemy)
+            push!(games[4],rank[2])
+            push!(games[5],rand()<0.55)
+            push!(games[6], i)
+            push!(games[7],cit)
 
             for i in ally
                 push!(participation[1], length(participation[1])>0 ? participation[1][end]+1 : 1)
@@ -1446,13 +1439,20 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         end
         for i in junior_games
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
-            enemy=rand(teams[1][teams[3].==section[1]][2:end])
 
-            push!(meetings[1], length(meetings[1]) > 0 ? meetings[1][end]+1 : 1)
-            push!(meetings[2],1)
-            push!(meetings[3], enemy)
-            push!(meetings[4], cit)
-            push!(meetings[5],i)
+            n=rand(3:5)
+            enemy=randperm(length(teams[1][teams[3].==section[1]][2:end]))
+            enemy=teams[1][teams[3].==section[1]][2:end][enemy][1:n]
+            for j in 1:n
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],1)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],"NULL")
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit) 
+            end
+
         end
 
         # Turnieje seniorzy
@@ -1467,13 +1467,19 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         end
         for i in senior_games
             cit=sample(1:length(halls[:,1]), Weights(Int.(halls[:,3])))
-            enemy=rand(teams[1][teams[3].==section[2]][2:end])
 
-            push!(meetings[1], length(meetings[1]) > 0 ? meetings[1][end]+1 : 1)
-            push!(meetings[2],2)
-            push!(meetings[3], enemy)
-            push!(meetings[4], cit)
-            push!(meetings[5],i)
+            n=rand(3:5)
+            enemy=randperm(length(teams[1][teams[3].==section[2]][2:end]))
+            enemy=teams[1][teams[3].==section[2]][2:end][enemy][1:n]
+            for j in 1:n
+                push!(games[1], length(games[1])>0 ? games[1][end]+1 : 1)
+                push!(games[2],2)
+                push!(games[3],enemy[j])
+                push!(games[4],rank[1])
+                push!(games[5],"NULL")
+                push!(games[6], i+Day(round(Int,((j-1)/2))))
+                push!(games[7],cit) 
+            end
         end
 
     end
@@ -1534,7 +1540,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
             returns=[Any[] for i in 1:length(equipment[1])]
 
-            for i in Date(start_year+1,6,24):Day(1):Date(2022,5,25)
+            for i in Date(start_year+1,6,24):Day(1):Date(now())
                 m=rand(9 <=Dates.month(i) <= 2 ? Poisson(5) : Poisson(3))
                 cust=sample(1:n,m,replace=false)
                 for j in cust
@@ -1553,10 +1559,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1575,10 +1582,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1597,10 +1605,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1619,10 +1628,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1641,10 +1651,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
 
                             temp=rand()
                             if temp<95/100
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]))
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]) < Date(now()) ? rental[2][end]+Day(rental[5][end]) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             else
-                                push!(rental[3], rental[2][end]+Day(rental[5][end]+rand(Poisson(1/3))+1))
+                                temp_delay=rand(Poisson(1/3))+1
+                                push!(rental[3], rental[2][end]+Day(rental[5][end]+temp_delay) < Date(now()) ? rental[2][end]+Day(rental[5][end]+temp_delay) : "NULL")
                                 push!(returns[a],[rental[3][end],b])
                             end
                         end
@@ -1652,7 +1663,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
                 end
 
                 for k in 1:length(returns)
-                    while length(returns[k])>0 &&  returns[k][1][1]<=i
+                    while length(returns[k])>0 && returns[k][1][1] != "NULL" && returns[k][1][1]<=i
                         stan[k]+=returns[k][1][2]
                         popfirst!(returns[k])
                     end
@@ -1673,8 +1684,8 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         customers_table="""INSERT INTO  customers (id, phone_number, pesel)  VALUES\n"""
         employees_table="""INSERT INTO employees (id, personal_data_id, function)  VALUES\n"""
         equipment_table="""INSERT INTO  equipment (id, name, quantity, price_per_day, producer, target_group)  VALUES\n"""
-        games_table="""INSERT INTO games (id, winning_team_id, lost_team_id, date, rank)  VALUES\n"""
-        meetings_table="""INSERT INTO meetings (id, our_team_id, other_team_id, address_id, date)  VALUES\n"""
+        games_table="""INSERT INTO games (id, our_team_id, enemy_team_id, rank, results, date,address_id)  VALUES\n"""
+        #meetings_table="""INSERT INTO meetings (id, our_team_id, other_team_id, address_id, date)  VALUES\n"""
         participation_table="""INSERT INTO  participation (id, player_id, game_id)  VALUES\n"""
         personal_data_table="""INSERT INTO personal_data (id, first_name, last_name, birth_date, address_id, salary)  VALUES\n"""
         players_table="""INSERT INTO players (id, personal_data_id, team_id, joining_date, active) VALUES\n"""
@@ -1710,16 +1721,16 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         end
         
         for i in 1:length(games[1])
-            txt="($(games[1][i]),$(games[2][i]),$(games[3][i]),'$(games[4][i])','$(games[5][i])')"
+            txt="($(games[1][i]),'$(games[2][i])','$(games[3][i])','$(games[4][i])',$(games[5][i] == "NULL" ? "NULL" : games[5][i] ? "'win'" : "'lose'"), '$(games[6][i])','$(games[7][i])')"
             txt*= i<length(games[1]) ? ",\n" : "\n;"
             games_table*=txt
         end
 
-        for i in 1:length(meetings[1])
+        #=for i in 1:length(meetings[1])
             txt="($(meetings[1][i]),$(meetings[2][i]),$(meetings[3][i]),$(meetings[4][i]),'$(meetings[5][i])')"
             txt*= i<length(meetings[1]) ? ",\n" : "\n;"
             meetings_table*=txt
-        end
+        end=#
 
         for i in 1:length(participation[1])
             txt="($(participation[1][i]),$(participation[2][i]),$(participation[3][i]))"
@@ -1740,7 +1751,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         end
         
         for i in 1:length(rental[1])
-            txt="($(rental[1][i]),'$(rental[2][i])','$(rental[3][i])',$(rental[4][i]),$(rental[5][i]),$(rental[6][i]),$(rental[7][i]))"
+            txt="($(rental[1][i]),'$(rental[2][i])',$(rental[3][i] != "NULL" ? "'$(rental[3][i])'" : rental[3][i]),$(rental[4][i]),$(rental[5][i]),$(rental[6][i]),$(rental[7][i]))"
             txt*= i<length(rental[1]) ? ",\n" : "\n;"
             rental_table*=txt
         end
@@ -1761,7 +1772,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             phone_number INT(10) NOT NULL,
             pesel BIGINT(11) NOT NULL
         );
-
+        
         CREATE OR REPLACE TABLE equipment(
             id INT(3) PRIMARY KEY AUTO_INCREMENT,
             name VARCHAR(50) NOT NULL,
@@ -1770,8 +1781,8 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             producer VARCHAR(50),
             target_group ENUM('children', 'teeneger', 'adult')
         );
-
-
+        
+        
         CREATE OR REPLACE TABLE rental(
             id INT(5) PRIMARY KEY AUTO_INCREMENT,
             rental_date DATE NOT NULL,
@@ -1783,13 +1794,13 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             quantity INT(2) NOT NULL,
             FOREIGN KEY(equipment_id) REFERENCES equipment(id)
         );
-
+        
         CREATE OR REPLACE TABLE addresses(
             id INT(4) PRIMARY KEY AUTO_INCREMENT,
             address VARCHAR(255) NOT NULL,
             city VARCHAR(50) NOT NULL
         );
-
+        
         CREATE OR REPLACE TABLE personal_data(
             id INT(3) PRIMARY KEY AUTO_INCREMENT,
             first_name VARCHAR(15) NOT NULL,
@@ -1799,44 +1810,36 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             FOREIGN KEY(address_id)REFERENCES addresses(id),
             salary DECIMAL(7,2) NOT NULL
         );
-
+        
         CREATE OR REPLACE TABLE employees(
             id INT(3) PRIMARY KEY AUTO_INCREMENT,
             personal_data_id INT(3) NOT NULL,
             function VARCHAR(20) NOT NULL,
             FOREIGN KEY(personal_data_id) REFERENCES personal_data(id)
         );
-
+        
         CREATE OR REPLACE TABLE teams(
             id INT(4) PRIMARY KEY AUTO_INCREMENT,
             club_name VARCHAR(50) NOT NULL,
             section ENUM('junior', 'senior') NOT NULL
         );
-
-        CREATE OR REPLACE TABLE meetings(
-            id INT(3) PRIMARY KEY AUTO_INCREMENT,
-            our_team_id INT(4) NOT NULL,
-            other_team_id INT(4) NOT NULL,
-            address_id INT(4),
-            date DATE NOT NULL,
-            FOREIGN KEY(our_team_id) REFERENCES teams(id),
-            FOREIGN KEY(other_team_id) REFERENCES teams(id),
-            FOREIGN KEY(address_id) REFERENCES addresses(id)
-        );
-
-
-
+        
+        
+        
         CREATE OR REPLACE TABLE games(
             id INT(4) PRIMARY KEY AUTO_INCREMENT,
-            winning_team_id INT(4) NOT NULL,
-            lost_team_id INT(4) NOT NULL,
-            rank ENUM('tournament', 'friendly','1') NOT NULL,
+            our_team_id INT(4) NOT NULL,
+            enemy_team_id INT(4) NOT NULL,
+            rank ENUM('tournament', 'friendly') NOT NULL,
+            results ENUM('lose', 'win'),
             date DATE NOT NULL,
-            FOREIGN KEY(winning_team_id) REFERENCES teams(id),
-            FOREIGN KEY(lost_team_id) REFERENCES teams(id)
+            address_id INT(4) NOT NULL,
+            FOREIGN KEY(our_team_id) REFERENCES teams(id),
+            FOREIGN KEY(enemy_team_id) REFERENCES teams(id),
+            FOREIGN KEY(address_id) REFERENCES addresses(id)
         );
-
-
+        
+        
         CREATE OR REPLACE TABLE players(
             id INT(3) PRIMARY KEY AUTO_INCREMENT,
             personal_data_id INT(3) NOT NULL,
@@ -1846,8 +1849,8 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             FOREIGN KEY(personal_data_id) REFERENCES personal_data(id),
             FOREIGN KEY(team_id) REFERENCES teams(id)
         );
-
-
+        
+        
         CREATE OR REPLACE TABLE participation(
             id INT(5) PRIMARY KEY AUTO_INCREMENT,
             player_id INT(3) NOT NULL,
@@ -1855,10 +1858,9 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
             FOREIGN KEY(player_id) REFERENCES players(id),
             FOREIGN KEY(game_id) REFERENCES games(id)
         );
-
-
-        SET FOREIGN_KEY_CHECKS=1;
-            
+        
+        
+        SET FOREIGN_KEY_CHECKS=1;            
     """;
     conn=DBInterface.connect(MySQL.Connection, "giniewicz.it", "team1", "te@m1P@ss", db="team1")
     DBInterface.execute(conn, reset);
@@ -1872,7 +1874,7 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         DBInterface.execute(conn,employees_table)
         DBInterface.execute(conn,equipment_table)
         DBInterface.execute(conn,games_table)
-        DBInterface.execute(conn,meetings_table)
+        #DBInterface.execute(conn,meetings_table)
         DBInterface.execute(conn,participation_table)
         DBInterface.execute(conn,personal_data_table)
         DBInterface.execute(conn,players_table)
@@ -1881,18 +1883,5 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
         DBInterface.execute(conn, "SET FOREIGN_KEY_CHECKS=1;")
     end
 
-#=    
-    addresses_table +
-    customers_table ?
-    employees_table +
-    equipment_table ?
-    games_table -
-    meetings_table +
-    participation_table +
-    personal_data_table +
-    players_table +
-    rental_table ?
-    teams_table +
-=#
 
 
