@@ -747,11 +747,11 @@ cd("D:\\GitHub\\Bazy-danych\\Projekty")
     
 
         items=[
-            "Brooms"
-            "Stones"
-            "Shoes"
-            "Gloves"
-            "Stop watch"
+            "brooms"
+            "stones"
+            "shoes"
+            "gloves"
+            "stop watch"
         ]
 
         items_price=[
@@ -1541,10 +1541,10 @@ Gen(start_year=2015)=begin
 
                             returns=[Any[] for i in 1:length(equipment[1])]
                             stan=copy(equipment[3])
-                            broom_id=equipment[1][equipment[2].=="Brooms"]
-                            stone_id=equipment[1][equipment[2].=="Stones"]
-                            shoes_id=equipment[1][equipment[2].=="Shoes"]
-                            glove_id=equipment[1][equipment[2].=="Gloves"]
+                            broom_id=equipment[1][equipment[2].=="brooms"]
+                            stone_id=equipment[1][equipment[2].=="stones"]
+                            shoes_id=equipment[1][equipment[2].=="shoes"]
+                            glove_id=equipment[1][equipment[2].=="gloves"]
 
 
                             for i in Date(start_year+1,6,24):Day(1):Date(now())
@@ -1717,7 +1717,7 @@ Gen(start_year=2015)=begin
                         addresses_table="""INSERT INTO addresses (id, address, city)  VALUES\n"""
                         customers_table="""INSERT INTO  customers (id, phone_number, pesel)  VALUES\n"""
                         employees_table="""INSERT INTO employees (id, personal_data_id, function)  VALUES\n"""
-                        equipment_table="""INSERT INTO  equipment (id, name, quantity, price_per_day, producer, target_group)  VALUES\n"""
+                        equipment_table="""INSERT INTO  equipment (id, kind, quantity, price_per_day, brand, target_group)  VALUES\n"""
                         games_table="""INSERT INTO games (id, our_team_id, enemy_team_id, rank, results, date,address_id)  VALUES\n"""
                         #meetings_table="""INSERT INTO meetings (id, our_team_id, other_team_id, address_id, date)  VALUES\n"""
                         participation_table="""INSERT INTO  participation (id, player_id, game_id)  VALUES\n"""
@@ -1736,7 +1736,7 @@ Gen(start_year=2015)=begin
                         end
                         
                         for i in 1:length(customers[1])
-                            txt="($(customers[1][i]),$(customers[2][i]),$(customers[3][i]))"
+                            txt="($(customers[1][i]),'$(string(customers[2][i]))','$(customers[3][i])')"
                             txt*= i<length(customers[1]) ? ",\n" : "\n;"
                             customers_table*=txt
                         end
@@ -1803,19 +1803,18 @@ Gen(start_year=2015)=begin
 
                         CREATE OR REPLACE TABLE customers(
                             id INT(4) PRIMARY KEY AUTO_INCREMENT,
-                            phone_number INT(10) NOT NULL,
-                            pesel BIGINT(11) NOT NULL
+                            phone_number VARCHAR(9) NOT NULL,
+                            pesel VARCHAR(11) NOT NULL
                         );
                         
                         CREATE OR REPLACE TABLE equipment(
                             id INT(3) PRIMARY KEY AUTO_INCREMENT,
-                            name VARCHAR(50) NOT NULL,
+                            kind VARCHAR(50) NOT NULL,
                             quantity INT(10) NOT NULL,
                             price_per_day DECIMAL(5,2) NOT NULL,
-                            producer VARCHAR(50),
+                            brand VARCHAR(50),
                             target_group ENUM('children', 'teeneger', 'adult')
                         );
-                        
                         
                         CREATE OR REPLACE TABLE rental(
                             id INT(5) PRIMARY KEY AUTO_INCREMENT,
@@ -1857,9 +1856,7 @@ Gen(start_year=2015)=begin
                             club_name VARCHAR(50) NOT NULL,
                             section ENUM('junior', 'senior') NOT NULL
                         );
-                        
-                        
-                        
+                                                
                         CREATE OR REPLACE TABLE games(
                             id INT(4) PRIMARY KEY AUTO_INCREMENT,
                             our_team_id INT(4) NOT NULL,
@@ -1873,7 +1870,6 @@ Gen(start_year=2015)=begin
                             FOREIGN KEY(address_id) REFERENCES addresses(id)
                         );
                         
-                        
                         CREATE OR REPLACE TABLE players(
                             id INT(3) PRIMARY KEY AUTO_INCREMENT,
                             personal_data_id INT(3) NOT NULL,
@@ -1884,7 +1880,6 @@ Gen(start_year=2015)=begin
                             FOREIGN KEY(team_id) REFERENCES teams(id)
                         );
                         
-                        
                         CREATE OR REPLACE TABLE participation(
                             id INT(5) PRIMARY KEY AUTO_INCREMENT,
                             player_id INT(3) NOT NULL,
@@ -1892,7 +1887,6 @@ Gen(start_year=2015)=begin
                             FOREIGN KEY(player_id) REFERENCES players(id),
                             FOREIGN KEY(game_id) REFERENCES games(id)
                         );
-                        
                         
                         SET FOREIGN_KEY_CHECKS=1;            
                     """;
