@@ -23,7 +23,7 @@
 - main.RTEX
     - kod źródłowy raportu
 - gen.jl
-    -tworzenie oraz uzupełnianie bazy danych w języku programowania Julia
+    - tworzenie oraz uzupełnianie bazy danych w języku programowania Julia
 - diagram_erd.vuerd.json
     - diagram ERD
 - 8_-_WYKAZ_IMION_MĘSKICH_OSÓB_ŻYJĄCYCH_WG_POLA_IMIĘ_PIERWSZE_WYSTĘPUJĄCYCH_W_REJESTRZE_PESEL_BEZ_ZGONÓW.XLSX     
@@ -141,4 +141,4 @@ danych.
 # Opis, co było najtrudniejsze podczas realizacji projektu
 - stworzenie schematu bazy danych
 - normalizacja bazy danych
-- uzyskanie precyzyjnych informacji na temat curlingu (KTO WPADŁ NA TAKI SUPER POMYSŁ?)
+- uzyskanie precyzyjnych informacji na temat curlingu
