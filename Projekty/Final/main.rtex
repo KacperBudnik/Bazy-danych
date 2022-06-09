@@ -1,0 +1,280 @@
+\documentclass{mwart}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[breaklinks, hidelinks, pdfusetitle, pdfdisplaydoctitle]{hyperref}
+\usepackage{icomma}
+\usepackage{booktabs}
+\usepackage[locale=DE]{siunitx}
+\usepackage{placeins}
+\usepackage{polski}
+
+
+\author {
+    Kacper Budnik
+    \and
+    Eryka Grygutis
+    \and
+    Karolina Jonczyk
+    \and
+    Jakub Kaczor\\\href{mailto:262257@student.pwr.edu.pl}{(262257@student.pwr.edu.pl)}
+}
+\title {Projekt bazy danych}
+\date \today
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+<<setup, include=FALSE>>=
+library(knitr)
+library(RMariaDB)
+library(DBI)
+library(lubridate)
+library(tidyverse)
+
+opts_chunk$set(echo=FALSE)
+options(
+    ggplot2.continuous.colour="viridis",
+    ggplot2.continuous.fill="viridis",
+    ggplot2.discrete.colour=scale_color_viridis_d,
+    ggplot2.discrete.fill=scale_fill_viridis_d,
+    OutDec=",",
+    dplyr.summarise.inform=FALSE
+)
+theme_set(theme_bw())
+@
+<<>>=
+connection <- dbConnect(
+    RMariaDB::MariaDB(),
+    host="giniewicz.it",
+    dbname="team1",
+    user="team1",
+    password="te@m1P@ss"
+)
+
+# Used tables
+games <- tbl(connection, "games")
+teams <- tbl(connection, "teams")
+players <- tbl(connection, "players")
+participation <- tbl(connection, "participation")
+equipment <- tbl(connection, "equipment")
+rental <- tbl(connection, "rental")
+personal_data <- tbl(connection, "personal_data")
+@
+
+\section*{Wprowadzenie}
+W tej analizie odpowiemy kolejno na następujące pytania, dotyczące bazy
+danych klubu sportowego Curling Masters.
+\begin{enumerate}
+    \item Jak wygląda rozkład spotkań ze względu na miesiąc?
+    \item Jaki procent graczy w historii brał udział w grach?
+    \item Jak wygląda ranking najlepszych 10 graczy w historii klubu?
+    \item Jak się ma stosunek wygranych do przegranych ze względu na
+        sekcje?
+    \item Czy w okolicy turniejów, sprzęt w wypożyczalni cieszy się
+        większym popytem?
+    \item Czy w wypożyczalni klubu, ilość sprzętu jest wystarczająca?
+\end{enumerate}
+<<fig.cap="Rozkład odbytych gier ze względu na miesiąc roku.">>=
+games %>% select(date) %>% collect() %>%
+    mutate(month=month(date, label=TRUE), happened=date < today()) %>%
+    ggplot() +
+        geom_bar(aes(
+            x=month,
+            fill=factor(
+                happened, levels=c(FALSE, TRUE), labels=c("Zaplanowane", "Odbyte")
+                )
+        )) +
+        xlab("Miesiąc") +
+        ylab("Liczność") +
+        guides(fill=guide_legend(title="Spotkanie"))
+@
+<<fig.cap="Bilans wygranych i przegranych ze względu na sekcję.">>=
+games %>% left_join(teams, by=c("our_team_id"="id")) %>%
+    filter(date < today()) %>%
+    ggplot() +
+    geom_bar(aes(x=section, fill=results), position="fill")
+@
+\section {Jak wygląda rozkład spotkań ze względu na miesiąc?}
+<<>>=
+active_players_count <- players %>% count()
+@
+Zgodnie z histogramem przedstawionym na rysunku 1. najwięcej meczy rozegrano kolejno w lutym, październiku i wrześniu. W 6 miesiącach (luty, marzec, sierpień, wrzesień, październik i listopad) zaplanowano więcej meczy niż zostały rozegrane. To oznacza, że podczas sezonu rozgrywek zawsze zaplanowano o kilka spotkań więcej. Kwiecień był miesiącem, w którym rozegrano najmniej meczy. Uważnie przyglądając się wykresowi, można stwierdzić, że największe natężenie rozgrywek przypada na końcówkę zimy (luty, marzec) oraz jesień (wrzesień, październik, listopad). 
+
+%RYSUNEK 1, RYSUNEK 3
+
+<<label="win-ratio-distribution", fig.cap="Rozkład stosunku wygranych do zagranych.">>=
+played <- games %>% filter(date < today(), !is.na(results))
+results <- players %>%
+    right_join(
+        participation,
+        by=c("id"="player_id"),
+        suffix=c("_player", "_participation")
+    ) %>%
+    left_join(
+        played,
+        by=c("game_id"="id"),
+        suffix=c("_players", "_game")
+    ) %>%
+    left_join(
+        teams,
+        by=c("team_id"="id"),
+        suffix=c("_played", "_teams")
+    ) %>%
+    select(id_player, personal_data_id, results) %>%
+    group_by(id_player, personal_data_id) %>% summarize(
+        wins=sum(results == "win", na.rm=TRUE),
+        count=n()
+    ) %>%
+    # Filter 1/1 and 1/0
+    mutate(win_ratio=wins / count) %>% collect() %>% ungroup()
+
+all_players_count <- (count(players) %>% collect())$n
+participated_players_count <- count(results)$n
+participation_percentage <- round(
+    participated_players_count / all_players_count,
+    3
+) * 100
+\section{ Jaki procent graczy w historii brał udział w grach?}
+@
+
+Nie każdy członek klubu rozegrał chociaż jeden mecz. Okazuje się, że spośród wszystkich 60 graczy, tylko 17 brało udział w odbytych grach. Jest to ok. 28,3 \% wszystkich graczy. Oznacza to, że na rozgrywki zostaje wystawiana pewna grupa klubowiczów. Możemy wnioskować, że to są najlepsi gracze z klubu.
+%Okazuje się, że spośród wszystkich \Sexpr{all_players_count} graczy, tylko
+%\Sexpr{participated_players_count} brało udział w odbytych grach. Jest to
+%ok. \Sexpr{participation_percentage}\,\%. W takim wypadku nie
+%będziemy używać wyszukanych sposobów na znalezienie formuły oceny,
+%a jedynie odfiltrujemy przypadki typu 0/1 oraz 1/1. Powiedzmy, że za poziom
+%istotności stosunku wygranych do przegranych ustalamy na minimum 40
+%rozegranych gier. Wtedy ranking najlepszych graczy wygląda tak, jak
+%w tabeli \ref{tab:ranking}.
+
+<<>>=
+# Filter 0/1, 1/1, etc.
+results <- results %>% filter(!is.na(win_ratio), count >= 40)
+
+# Get names
+results <- results %>% left_join(
+        personal_data,
+        by=c("personal_data_id"="id"),
+        copy=TRUE
+    ) %>%
+    select(first_name, last_name, wins, count, win_ratio)
+
+# Choose Top 10
+results <- results %>% arrange(desc(win_ratio)) %>% slice(1:10)
+
+results %>% kable(
+    col.names=c("Imię", "Nazwisko", "Wygrane", "Zagrane", "Stosunek"),
+    booktabs=TRUE,
+    caption="Ranking 10 najlepszych graczy.",
+    label="ranking"
+)
+@
+\section{Jak wygląda ranking najlepszych 10 graczy w historii klubu?}
+
+@
+Ranking najlepszych 10 graczy w historii klubu jest zależny od procentu graczy biorących udział kiedykolwiek w meczach. Oczywiście sam stosunek wygranych do zagranych nie wystarczy. Gracze, którzy zagrali tylko jedną grę, ale wygraną, byliby według wskaźnika tymi najlepszymi. Należałoby uchwycić jeszcze pewność oceny. W takim wypadku nie będziemy używać wyszukanych sposobów na znalezienie formuły oceny, a jedynie odfiltrujemy przypadki typu 0/1 oraz 1/1. Powiedzmy, że za poziom istotności stosunku wygranych do przegranych ustalamy na minimum 40 rozegranych gier. Wtedy ranking najlepszych graczy wygląda tak, jak pokazano to poniżej w tabeli 1. Najlepszym graczem jest Michał Rekść i jego skuteczność to 70,37 \% wygranych meczy z wszystkich zagranych przez tego zawodnika.
+
+%TABELA 1 POPRAWIONA (BEZ JĘZ POLSKIEGO IMIE, NAZWISKO ITP)
+\section{Jak się ma stosunek wygranych do przegranych ze względu na sekcje?}
+@
+Korzystając z rysunku 2. wiadomo, że przegrane zostały oznaczone kolorem żółtym, a przegrane fioletowym. Średnio to juniorzy wygrywali częściej niż seniorzy. Skuteczność juniorów to około 65 \%, a seniorów to niewiele ponad 52 \%.
+
+%RYSUNEK 2
+
+\section{Czy w okolicy turniejów sprzęt w wypożyczalni cieszy się większym popytem?}
+
+@
+
+Omawiana baza danych uwzględnia wypożyczalnię (rental i equipment) sprzętu curlingowego dla zainteresowanych tym sportem. W wypożyczalni mamy możliwość wypożyczenia butów, szczotek, kamieni, rękawic i stoperów od 5 różnych firm. Moglibyśmy się spodziewać, że w czasie rozgrywek turniejowych ludzie są bardziej zainteresowani sportem i wypożyczają więcej sprzętu z naszej wypożyczalni. Zbadajmy taką zależność. Będziemy analizowali uśredniony rok. Pierwsze co należy zrobić, to zidentyfikować okres, w którym to odbywają się turnieje. Miesiące w których tego typu wydarzenia miały miejsce, można zobaczyć na rysunku 3. Dla tych miesięcy, mieliśmy średnio 123 wypożyczeń miesięcznie, natomiast w całym roku — 10 miesięcznie. Najczęściej wypożyczaną rzeczą były rękawiczki w rozmiarze dziecięcym. Podsumowując, w trakcie turniejów sprzęt z wypożyczalni cieszy się dużo większym zainteresowaniem.
+
+% TABELA 2
+
+\section{Czy w wypożyczalni klubu, ilość sprzętu jest wystarczająca? }
+
+@
+Chcielibyśmy sprawdzić, czy ilość sprzętu, jaką posiadamy, jest wystarczająca. W tym celu sprawdzimy, czy wystąpiły sytuacje, w których wypożyczony został cały sprzęt danego typu. Okazuje się, że takie sytuacje wystąpiły. Dotyczyły produktów, które znajdują się w tabeli 2 z dodatku A. Należałoby ją przejrzeć i doposażyć magazyn w kolejnym sezonie, aby uniknąć sytuacji, w których brakuje sprzętu w wypożyczalni, gdyż może to skutkować niezadowoleniem klientów (a za tym idzie ryzyko wyboru przez nich innej wypożyczalni następnym razem) oraz mniejszym zyskiem. 
+
+
+
+<<fig.cap="Występowanie gier turniejowych ze względu na miesiąc roku.", label="tournaments">>=
+# Needed for lubridate
+rental <- collect(rental)
+
+tournaments <- games %>% filter(rank == "tournament", date < today()) %>%
+    collect()
+
+tournaments %>% mutate(month=month(date, label=TRUE)) %>% ggplot() +
+    geom_bar(aes(x=month)) +
+    xlab("Miesiąc") +
+    ylab("Liczność")
+
+tour_months <- tournaments %>% transmute(month=month(date)) %>% distinct()
+rental_years <- rental %>% transmute(year=year(rental_date)) %>% distinct()
+
+tour_avg <- rental %>% filter(month(rental_date) %in% tour_months$month) %>%
+    summarize(avg=n() / (nrow(tour_months) * nrow(rental_years))) %>%
+    round()
+
+general_avg <- rental %>%
+    summarize(avg=n() / (12 * nrow(rental_years))) %>% round()
+@
+
+
+<<label="depletion">>=
+rental <- tbl(connection, "rental")
+# Get joined table copied to R. This enables using advanced lubridate
+# functions.
+equipment_rental <- right_join(
+    equipment,
+    rental,
+    by=c("id"="equipment_id"),
+    suffix=c("_equipment", "_rental")
+) %>% collect()
+
+# Get a vector with dates spanned by renting period.
+start_date <- min(equipment_rental$rental_date)
+end_date <- max(equipment_rental$return_date, na.rm=TRUE)
+n_days <- interval(start_date, end_date) / days(1)
+renting_days <- 0:n_days + start_date
+
+# Add lubridate intervals to ease the work
+equipment_rental <- equipment_rental %>% mutate(interval=interval(rental_date, return_date))
+
+# For every item and for every day in the renting period, count rented
+# pieces.
+summary <- equipment_rental %>% group_by(id_equipment) %>%
+    summarize(
+        day=renting_days,
+        count=map_int(
+            renting_days,
+            function(x) sum((x %within% interval) * quantity_rental)
+        )
+    )
+
+depleted_products <- summary %>% group_by(id_equipment) %>%
+    left_join(equipment, by=c("id_equipment"="id"), copy=TRUE) %>%
+    mutate(depleted=count >= quantity) %>% filter(depleted == TRUE) %>%
+    group_by(id_equipment, kind, brand, target_group) %>% summarize(
+        occurences=n()
+    ) %>% arrange(desc(occurences))
+@
+
+
+\FloatBarrier
+\appendix
+\section {Braki w magazynie}\label {depleted}
+<<>>=
+kable(
+    depleted_products,
+    label="depleted",
+    caption="Produkty dla których wypożyczono wszystkie egzemplarze wraz z wystąpieniami (w dniach).",
+    booktabs=TRUE
+)
+@
+
+\end{document}
