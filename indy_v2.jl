@@ -290,6 +290,7 @@ results = DBInterface.execute(stmt) # execute a prepared statement; returns an i
 
 rowid = DBInterface.lastrowid(results) # get the last row id of an INSERT statement, as supported by the database
 
+
 # example of using a query resultset
 for row in results
     #@show propertynames(row) # see possible column names of row results

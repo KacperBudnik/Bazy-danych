@@ -1,0 +1,5 @@
+#!/bin/Rscript
+
+args <- commandArgs(trailingOnly=TRUE)
+filename <- args[1]
+knitr::knit(filename)

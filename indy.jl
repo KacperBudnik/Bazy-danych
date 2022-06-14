@@ -6,7 +6,7 @@ conn=DBInterface.connect(
     "giniewicz.it", 
     "student",
      "57u>3n7",
-     db="student")
+     db="student")  
 
 
 
@@ -52,7 +52,7 @@ for i in results
 end
 
 
-it=12:-0.5:10
+it=10:1.:20
 iterate(it)
 
 iterate(it,1)
@@ -126,7 +126,7 @@ data[
     [4,5,12,28],
     :length
     ]
-Int.(ans) # zapis 16
+Int.(ans) #  zapis 16
 
 
 
